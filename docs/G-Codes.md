@@ -1309,9 +1309,9 @@ The following commands are available when the
 is enabled.
 
 #### X_TWIST_CALIBRATE
-`X_TWIST_CALIBRATE [N_POINTS=<value>]`: Initiates the X twist calibration 
-wizard. `N_POINTS` specifies the number of points along the X axis to calibrate 
-at and defaults to 3. 
+`X_TWIST_CALIBRATE [N_POINTS=<value>]`: Initiates the X twist calibration
+wizard. `N_POINTS` specifies the number of points along the X axis to calibrate
+at and defaults to 3.
 
 #### X_TWIST_COMPENSATE_STATUS
 `X_TWIST_COMPENSATE_STATUS`: Returns the status of the `[x_twist_compensation]`
@@ -1322,7 +1322,7 @@ module. If compensation is enabled, this prints the `z_compensations` values and
 `X_TWIST_COMPENSATE_MESH MESH_NAME=<value> COMPENSATION_NAME=<value>`: Applies
 a stored compensation profile of name `COMPENSATION_NAME` to a stored mesh
 profile of name `MESH_NAME`. This is useful for correcting a mesh that was taken
-while compensation was turned off/not enabled. 
+while compensation was turned off/not enabled.
 
 #### X_TWIST_PROFILE_LOAD
 `X_TWIST_PROFILE_LOAD NAME=<value>`: Loads the stored compensation profile of
@@ -1332,7 +1332,7 @@ name `NAME` as the active profile.
 `X_TWIST_PROFILE_CLEAR`: Clears the active profile.
 
 #### X_TWIST_PROFILE_DELETE
-`X_TWIST_PROFILE_DELETE NAME=<value>`: Deletes the stored compensation profile 
+`X_TWIST_PROFILE_DELETE NAME=<value>`: Deletes the stored compensation profile
 of name `NAME`.
 
 #### X_TWIST_PROFILE_SAVE

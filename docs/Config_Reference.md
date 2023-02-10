@@ -1953,7 +1953,7 @@ z_offset:
 
 X axis twist dependent toolhead Z position adjustment. Compensate for vertical
 toolhead movement caused by the rotation of the toolhead about the X axis due to
-a twist. See [X Twist Compensation Guide](X_Twist_Compensation.md) for more 
+a twist. See [X Twist Compensation Guide](X_Twist_Compensation.md) for more
 detailed information regarding symptoms, configuration and setup.
 
 ```

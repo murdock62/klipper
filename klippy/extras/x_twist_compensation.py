@@ -5,9 +5,9 @@
 [x_twist_compensation]
 horizontal_move_z: 10
 speed: 50
-start_x: 0 ; nozzle's x coordinate at the start of the compensation ! required
-end_x: 200 ; nozzle's x coordinate at the end of the compensation ! required
-y: 100 ; nozzle's y coordinate at the start and end of the compensation ! required
+start_x: 0 ; nozzle's x coordinate at the start of the calibration ! required
+end_x: 200 ; nozzle's x coordinate at the end of the calibration ! required
+y: 100 ; nozzle's y coordinate during the calibration ! required
 """
 
 import logging
@@ -40,7 +40,8 @@ class XTwistCompensation:
         self.printer = config.get_printer()
 
         # get values from [x_twist_compensation] section in printer .cfg
-        for config_key, (config_type, required, default) in Config.CONFIG_OPTIONS.items():
+        for config_key, \
+            (config_type, required, default) in Config.CONFIG_OPTIONS.items():
             value = None
             if config_type == float:
                 value = config.getfloat(config_key, default)
@@ -48,7 +49,8 @@ class XTwistCompensation:
                 value = config.get(config_key, default)
             if required and value is None:
                 raise config.error(
-                    "Missing required config option for section [{}]: {}".format(config.get_name(), config_key))
+                    "Missing required config option for section [{}]: {}"
+                    .format(config.get_name(), config_key))
             setattr(self, config_key, value)
 
         # setup persistent storage
@@ -56,7 +58,8 @@ class XTwistCompensation:
 
         # setup calibrater
         calibrater_config = {
-            'horizontal_move_z': self.horizontal_move_z if hasattr(self, 'horizontal_move_z') else None,
+            'horizontal_move_z': self.horizontal_move_z
+                if hasattr(self, 'horizontal_move_z') else None,
             'speed': self.speed if hasattr(self, 'speed') else None,
             'start_x': self.start_x if hasattr(self, 'start_x') else None,
             'end_x': self.end_x if hasattr(self, 'end_x') else None,
@@ -106,7 +109,9 @@ class XTwistCompensation:
         else:
             return 0
 
-    cmd_X_TWIST_COMPENSATE_MESH_help = "Compensate a mesh by applying the x twist compensation to the given raw mesh"
+    cmd_X_TWIST_COMPENSATE_MESH_help = \
+    "Compensate a mesh by applying the x" \
+    "twist compensation to the given raw mesh"
 
     def cmd_X_TWIST_COMPENSATE_MESH(self, gcmd):
         # get the mesh name from the gcode command
@@ -133,7 +138,8 @@ class XTwistCompensation:
             active_bed_mesh, compensation_name)
 
         # update active mesh with modified probed matrix, save under new name
-        compensated_mesh_name = raw_mesh_name + '_compensated_' + compensation_name
+        compensated_mesh_name = \
+            raw_mesh_name + '_compensated_' + compensation_name
         active_bed_mesh.build_mesh(modified_probed_matrix)
         bed_mesh_pmgr.save_profile(compensated_mesh_name)
 
@@ -167,7 +173,8 @@ class XTwistCompensation:
         x_step = x_range / (len(mesh.probed_matrix[0]) - 1)
         return x_min + col_index * x_step
 
-    cmd_X_TWIST_COMPENSATE_STATUS_help = "Get the status of the x twist compensation"
+    cmd_X_TWIST_COMPENSATE_STATUS_help = \
+        "Get the status of the x twist compensation"
 
     def cmd_X_TWIST_COMPENSATE_STATUS(self, gcmd):
         if (self.pmgr.get_is_enabled()):
@@ -181,10 +188,13 @@ class XTwistCompensation:
                 Profile name: {}
                 Profile z compensations: {}
                 Profile recommended z offset: {}
-                """.format(profile_name, profile_z_compensations, profile_recommended_z_offset))
+                """.format(profile_name,
+                    profile_z_compensations, profile_recommended_z_offset))
         else:
             gcmd.respond_info(
-                "X twist compensation is disabled, load a profile using X_TWIST_PROFILE_LOAD")
+                "X twist compensation is disabled, "\
+                "load a profile using X_TWIST_PROFILE_LOAD"
+            )
 
 
 class Calibrater:
@@ -278,8 +288,10 @@ class Calibrater:
             nozzle_points.append((x, y))
         return nozzle_points
 
-    def _calculate_probe_points(self, nozzle_points, probe_x_offset, probe_y_offset):
-        # calculate the points to put the nozzle at, returned as a list of tuples
+    def _calculate_probe_points(self, nozzle_points,
+        probe_x_offset, probe_y_offset):
+        # calculate the points to put the nozzle at
+        # returned as a list of tuples
         probe_points = []
         for point in nozzle_points:
             x = point[0] - probe_x_offset
@@ -289,8 +301,9 @@ class Calibrater:
 
     def _move_helper(self, target_coordinates, override_speed=None):
         # pad target coordinates
-        target_coordinates = (target_coordinates[0], target_coordinates[1], None) if len(
-            target_coordinates) == 2 else target_coordinates
+        target_coordinates = \
+            (target_coordinates[0], target_coordinates[1], None) \
+            if len(target_coordinates) == 2 else target_coordinates
         toolhead = self.printer.lookup_object('toolhead')
         speed = self.speed if target_coordinates[2] == None else self.lift_speed
         speed = override_speed if override_speed is not None else speed
@@ -319,9 +332,12 @@ class Calibrater:
 
         # start the manual (nozzle) probe
         ManualProbe.ManualProbeHelper(
-            self.printer, self.gcmd, self._manual_probe_callback_factory(profile_name, probe_points, nozzle_points, interval))
+            self.printer, self.gcmd,
+            self._manual_probe_callback_factory(profile_name,
+            probe_points, nozzle_points, interval))
 
-    def _manual_probe_callback_factory(self, profile_name, probe_points, nozzle_points, interval):
+    def _manual_probe_callback_factory(self, profile_name, probe_points,
+        nozzle_points, interval):
         # returns a callback function for the manual probe
         is_end = self.current_point_index == len(probe_points) - 1
 
@@ -353,8 +369,9 @@ class Calibrater:
         # create a new profile using profile manager
         self.pmgr.create_profile(profile_name, self.results, avg)
         # recommend z offset to user
-        self.gcmd.respond_info("X_TWIST_CALIBRATE: Calibration complete, reccomended z_offset: %f" % (
-            avg))
+        self.gcmd.respond_info(
+            "X_TWIST_CALIBRATE: Calibration complete, reccomended z_offset: %f"
+            % (avg))
 
 
 class Profile:
@@ -412,18 +429,23 @@ class ProfileManager:
         z_compensations = profile.get('z_compensations', None)
         if z_compensations is None:
             raise self.gcode.error(
-                "X_TWIST_PROFILE %s does not have z_compensations" % (profile_name))
+                "X_TWIST_PROFILE %s does not have z_compensations"
+                % (profile_name))
         recommended_z_offset = profile.get('recommended_z_offset', None)
         if recommended_z_offset is None:
             raise self.gcode.error(
-                "X_TWIST_PROFILE %s does not have recommended_z_offset" % (profile_name))
+                "X_TWIST_PROFILE %s does not have recommended_z_offset"
+                % (profile_name))
         return Profile(profile_name, z_compensations, recommended_z_offset)
 
     def _fetch_stored_profiles(self, config):
-        # fetch stored profiles in printer.cfg (using prefix of "x_twist_compensation"")
+        # fetch stored profiles in printer.cfg
+        # (using prefix of "x_twist_compensation"")
         stored_profiles = config.get_prefix_sections(self.name)
         stored_profiles = [
-            stored_profile for stored_profile in stored_profiles if stored_profile.get_name() != self.name]
+            stored_profile for stored_profile in stored_profiles
+            if stored_profile.get_name() != self.name
+            ]
         # add stored profiles to self.profiles
         for stored_profile in stored_profiles:
             prefixed_name = stored_profile.get_name()
@@ -437,8 +459,8 @@ class ProfileManager:
                 elif option_type == str:
                     value = stored_profile.get(option)
                     if option == 'z_compensations':
-                        self.profiles[name][option] = Helpers.parse_comma_separated_floats(
-                            value)
+                        self.profiles[name][option] = \
+                        Helpers.parse_comma_separated_floats(value)
                     else:
                         self.profiles[name][option] = stored_profile.get(
                             option)
@@ -461,7 +483,8 @@ class ProfileManager:
             'X_TWIST_PROFILE_CLEAR', self.cmd_X_TWIST_PROFILE_CLEAR,
             desc=self.cmd_X_TWIST_PROFILE_CLEAR_help)
 
-    def create_profile(self, profile_name, z_compensations, recommended_z_offset):
+    def create_profile(self, profile_name, z_compensations,
+        recommended_z_offset):
         # create a new profile
         new_profile = Profile(
             profile_name, z_compensations, recommended_z_offset)
