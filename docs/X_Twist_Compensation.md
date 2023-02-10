@@ -2,8 +2,8 @@
 
 This document describes the [x_twist_compensation] module. 
 
-Printer's with a probe that have a probe `y_offset` may give inaccurate probe
-results due to a twist in the probe's X axis. This is common in printer's with
+Printers with a probe that have a probe `y_offset` may give inaccurate probe
+results due to a twist in the probe's X axis. This is common in printers with
 designs like the Prusa MK3, Sovol 06 etc and is further described under 
 [probe location bias](Probe_Calibrate.md#location-bias-check). It may result in
 probe operations such as [Bed Mesh](Bed_Mesh.md), 

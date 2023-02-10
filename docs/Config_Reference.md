@@ -1153,12 +1153,12 @@ command becomes available. This routine assumes the following Z motor
 configuration:
 ```
  ----------------
- |Z1          Z2|
- |  ---------   |
- |  |       |   |
- |  |       |   |
- |  x--------   |
- |Z           Z3|
+ | Z1          Z2 |
+ | -------------- |
+ |                |  |  |
+ |                |  |  |
+ | x--------      |
+ | Z           Z3 |
  ----------------
 ```
 Where x is the 0, 0 point on the bed
@@ -1951,13 +1951,10 @@ z_offset:
 
 ### [x_twist_compensation]
 
-Printer's with a probe that have a probe `y_offset` may give inaccurate probe
-results due to a twist in the probe's X axis. This is common in printer's with
-designs like the Prusa MK3, Sovol 06 etc and is further described under 
-[probe location bias](Probe_Calibrate.md#location-bias-check).
-This module uses manual measurements by the user to correct the probe's results. 
-See [X Twist Compensation Guide](X_Twist_Compensation.md) for more detailed
-information regarding configuration and setup.
+X axis twist dependent toolhead Z position adjustment. Compensate for vertical
+toolhead movement caused by the rotation of the toolhead about the X axis due to
+a twist. See [X Twist Compensation Guide](X_Twist_Compensation.md) for more 
+detailed information regarding symptoms, configuration and setup.
 
 ```
 [x_twist_compensation]
