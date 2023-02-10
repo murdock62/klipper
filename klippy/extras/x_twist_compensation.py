@@ -457,6 +457,9 @@ class ProfileManager:
         self.gcode.register_command(
             'X_TWIST_PROFILE_DELETE', self.cmd_X_TWIST_PROFILE_DELETE,
             desc=self.cmd_X_TWIST_PROFILE_DELETE_help)
+        self.gcode.register_command(
+            'X_TWIST_PROFILE_CLEAR', self.cmd_X_TWIST_PROFILE_CLEAR,
+            desc=self.cmd_X_TWIST_PROFILE_CLEAR_help)
 
     def create_profile(self, profile_name, z_compensations, recommended_z_offset):
         # create a new profile
@@ -572,10 +575,10 @@ class ProfileManager:
         raise self.gcode.error(
             """
             Please follow the following syntax:
-            X_TWIST_PROFILE LOAD NAME=<PROFILE_NAME>
-            X_TWIST_PROFILE SAVE NAME=<PROFILE_NAME>
-            X_TWIST_PROFILE DELETE NAME=<PROFILE_NAME>
-            X_TWIST_PROFILE CLEAR
+            X_TWIST_PROFILE_LOAD NAME=<PROFILE_NAME>
+            X_TWIST_PROFILE_SAVE NAME=<PROFILE_NAME>
+            X_TWIST_PROFILE_DELETE NAME=<PROFILE_NAME>
+            X_TWIST_PROFILE_CLEAR
             """
         )
 
