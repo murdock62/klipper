@@ -40,18 +40,16 @@ class XTwistCompensation:
         self.printer = config.get_printer()
 
         # get values from [x_twist_compensation] section in printer .cfg
-        self.speed = config.getfloat('speed', Config.DEFAULT_SPEED)
-        self.horizontal_move_z = config.getfloat(
-            'horizontal_move_z', Config.DEFAULT_HORIZONTAL_MOVE_Z)
-        self.start_x = config.getfloat('start_x', None)
-        self.end_x = config.getfloat('end_x', None)
-        self.y = config.getfloat('y', None)
-        
         for config_key, (config_type, required, default) in Config.CONFIG_OPTIONS.items():
-            read_value = getattr(self, config_key, None)
-            if required and read_value is None:
+            value = None
+            if config_type == float:
+                value = config.getfloat(config_key, default)
+            else:
+                value = config.get(config_key, default)
+            if required and value is None:
                 raise config.error(
                     "Missing required config option for section [{}]: {}".format(config.get_name(), config_key))
+            setattr(self, config_key, value)
 
         # setup persistent storage
         self.pmgr = ProfileManager(config, self)
