@@ -52,7 +52,7 @@ class XTwistCompensation:
             setattr(self, config_key, value)
 
         # setup persistent storage
-        self.pgmr = ProfileManager(config, self)
+        self.pmgr = ProfileManager(config, self)
 
         # setup calibrater
         calibrater_config = {
@@ -63,16 +63,12 @@ class XTwistCompensation:
             'y': self.y if hasattr(self, 'y') else None
         }
         self.calibrater = Calibrater(
-            config, self.pgmr, calibrater_config)
+            config, self.pmgr, calibrater_config)
 
         self.enabled = False
 
         # register gcode handlers
         self._register_gcode_handlers()
-
-        # TODO: register transform, refer to bed_mesh
-        # gcode_move = self.printer.load_object(config, 'gcode_move')
-        # gcode_move.set_move_transform(self)
 
     def _register_gcode_handlers(self):
         # register gcode handlers
@@ -81,16 +77,21 @@ class XTwistCompensation:
             'X_TWIST_COMPENSATE_MESH',
             self.cmd_X_TWIST_COMPENSATE_MESH,
             desc=self.cmd_X_TWIST_COMPENSATE_MESH_help)
+        self.gcode.register_command(
+            'X_TWIST_COMPENSATE_STATUS',
+            self.cmd_X_TWIST_COMPENSATE_STATUS,
+            desc=self.cmd_X_TWIST_COMPENSATE_STATUS_help)
 
     def get_z_compensation_value(self, x_coord, optional_profile_name=None):
         # returns the (lineraly interpolated) z compensation value
         # for the given x coordinate
         # uses the current profile if optional_profile_name is not specified
-        if self.enabled or optional_profile_name is not None:
+        enabled = self.pmgr.get_is_enabled()
+        if enabled or optional_profile_name is not None:
             current_profile = \
-                self.pgmr.get_current_profile() \
+                self.pmgr.get_current_profile() \
                 if optional_profile_name is None \
-                else self.pgmr.get_profile(optional_profile_name)
+                else self.pmgr.get_profile(optional_profile_name)
             z_compensations = current_profile.z_compensations
             n_points = len(z_compensations)
             spacing = (self.end_x - self.start_x) / (n_points - 1)
@@ -130,10 +131,6 @@ class XTwistCompensation:
         # modify the probed matrix by applying the x twist compensation
         modified_probed_matrix = self._modify_probed_matrix(
             active_bed_mesh, compensation_name)
-        logging.info("original probed matrix: {}".format(
-            active_bed_mesh.get_probed_matrix()))
-        logging.info("modified probed matrix: {}".format(
-            modified_probed_matrix))
 
         # update active mesh with modified probed matrix, save under new name
         compensated_mesh_name = raw_mesh_name + '_compensated_' + compensation_name
@@ -169,6 +166,25 @@ class XTwistCompensation:
         x_range = mesh.mesh_x_max - mesh.mesh_x_min
         x_step = x_range / (len(mesh.probed_matrix[0]) - 1)
         return x_min + col_index * x_step
+
+    cmd_X_TWIST_COMPENSATE_STATUS_help = "Get the status of the x twist compensation"
+
+    def cmd_X_TWIST_COMPENSATE_STATUS(self, gcmd):
+        if (self.pmgr.get_is_enabled()):
+            profile = self.pmgr.get_current_profile()
+            profile_name = profile.name
+            profile_z_compensations = profile.z_compensations
+            profile_recommended_z_offset = profile.recommended_z_offset
+            gcmd.respond_info(
+                """
+                X twist compensation is enabled
+                Profile name: {}
+                Profile z compensations: {}
+                Profile recommended z offset: {}
+                """.format(profile_name, profile_z_compensations, profile_recommended_z_offset))
+        else:
+            gcmd.respond_info(
+                "X twist compensation is disabled, load a profile using X_TWIST_PROFILE_LOAD")
 
 
 class Calibrater:
@@ -343,13 +359,13 @@ class Calibrater:
 
 class Profile:
     PROFILE_OPTIONS = {
-        'z_compensations': str, 'calculated_z_offset': float
+        'z_compensations': str, 'recommended_z_offset': float
     }
 
-    def __init__(self, name, z_compensations, calculated_z_offset):
+    def __init__(self, name, z_compensations, recommended_z_offset):
         self.name = name
         self.z_compensations = z_compensations
-        self.calculated_z_offset = calculated_z_offset
+        self.recommended_z_offset = recommended_z_offset
 
 
 class ProfileManager:
@@ -368,6 +384,10 @@ class ProfileManager:
 
         # register gcode handlers
         self._register_gcode_handlers()
+
+    def get_is_enabled(self):
+        # returns
+        return self.current_profile is not None
 
     def get_current_profile(self):
         # return the current profile
@@ -393,11 +413,11 @@ class ProfileManager:
         if z_compensations is None:
             raise self.gcode.error(
                 "X_TWIST_PROFILE %s does not have z_compensations" % (profile_name))
-        calculated_z_offset = profile.get('calculated_z_offset', None)
-        if calculated_z_offset is None:
+        recommended_z_offset = profile.get('recommended_z_offset', None)
+        if recommended_z_offset is None:
             raise self.gcode.error(
-                "X_TWIST_PROFILE %s does not have calculated_z_offset" % (profile_name))
-        return Profile(profile_name, z_compensations, calculated_z_offset)
+                "X_TWIST_PROFILE %s does not have recommended_z_offset" % (profile_name))
+        return Profile(profile_name, z_compensations, recommended_z_offset)
 
     def _fetch_stored_profiles(self, config):
         # fetch stored profiles in printer.cfg (using prefix of "x_twist_compensation"")
@@ -438,10 +458,10 @@ class ProfileManager:
             'X_TWIST_PROFILE_DELETE', self.cmd_X_TWIST_PROFILE_DELETE,
             desc=self.cmd_X_TWIST_PROFILE_DELETE_help)
 
-    def create_profile(self, profile_name, z_compensations, calculated_z_offset):
+    def create_profile(self, profile_name, z_compensations, recommended_z_offset):
         # create a new profile
         new_profile = Profile(
-            profile_name, z_compensations, calculated_z_offset)
+            profile_name, z_compensations, recommended_z_offset)
         # save the profile
         self._save_profile(new_profile)
 
