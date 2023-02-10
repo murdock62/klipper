@@ -1949,6 +1949,39 @@ z_offset:
 #   See the "probe" section for more information on the parameters above.
 ```
 
+### [x_twist_compensation]
+
+Printer's with a probe that have a probe `y_offset` may give inaccurate probe
+results due to a twist in the probe's X axis. This is common in printer's with
+designs like the Prusa MK3, Sovol 06 etc and is further described under 
+[probe location bias](Probe_Calibrate.md#location-bias-check).
+This module uses manual measurements by the user to correct the probe's results. 
+See [X Twist Compensation Guide](X_Twist_Compensation.md) for more detailed
+information regarding configuration and setup.
+
+```
+[x_twist_compensation]
+#speed: 50
+#   The speed (in mm/s) of non-probing moves during the calibration.
+#   The default is 50.
+#horizontal_move_z: 5
+#   The height (in mm) that the head should be commanded to move to
+#   just prior to starting a probe operation. The default is 5.
+start_x: 20
+#   Defines the minimum X coordinate of the calibration
+#   This should be the X coordinate that positions the nozzle at the starting
+#   calibration position. This parameter must be provided.
+end_x: 200
+#   Defines the maximum X coordinate of the calibration
+#   This should be the X coordinate that positions the nozzle at the ending
+#   calibration position. This parameter must be provided.
+y: 112.5
+#   Defines the Y coordinate of the calibration
+#   This should be the Y coordinate that positions the nozzle during the
+#   calibration process. This parameter must be provided and is recommended to
+#   be near the center of the bed
+```
+
 ## Additional stepper motors and extruders
 
 ### [stepper_z1]
