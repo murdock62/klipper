@@ -101,7 +101,7 @@ class XTwistCompensation:
             spacing = (self.end_x - self.start_x) / (n_points - 1)
             interpolate_t = (x_coord - self.start_x) / spacing
             interpolate_i = math.floor(interpolate_t)
-            interpolate_i = BedMesh.constrain(interpolate_i, 0, n_points - 2)
+            interpolate_i = int(BedMesh.constrain(interpolate_i, 0, n_points - 2))
             interpolate_t -= interpolate_i
             interpolated_z_compensation = BedMesh.lerp(
                 interpolate_t, z_compensations[interpolate_i],
